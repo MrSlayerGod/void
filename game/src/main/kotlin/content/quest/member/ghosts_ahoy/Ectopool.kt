@@ -5,9 +5,14 @@ import world.gregs.voidps.engine.Script
 import world.gregs.voidps.engine.client.message
 import world.gregs.voidps.engine.entity.character.move.tele
 import world.gregs.voidps.engine.entity.character.player.Teleport
+import world.gregs.voidps.engine.entity.character.player.chat.ChatType
 import world.gregs.voidps.engine.entity.character.player.skill.Skill
 import world.gregs.voidps.engine.entity.character.player.skill.level.Level.has
+import world.gregs.voidps.engine.entity.character.sound
 import world.gregs.voidps.engine.get
+import world.gregs.voidps.engine.inv.inventory
+import world.gregs.voidps.engine.inv.replace
+import world.gregs.voidps.engine.queue.queue
 import world.gregs.voidps.type.Direction
 
 class Ectopool : Script {
@@ -32,12 +37,24 @@ class Ectopool : Script {
                 return@objTeleportTakeOff Teleport.CANCEL
             }
             anim("jump_up")
-            val teleports = get<ObjectTeleports>()
-            val definition = teleports.get(target.id, option).first()
-            val tile = teleports.teleportTile(this, definition)
-            tele(tile.addX(1))
-            exactMoveDelay(tile, startDelay = 49, delay = 68, direction = Direction.WEST)
+            queue("jump_to") {
+                val teleports = get<ObjectTeleports>()
+                val definition = teleports.get(target.id, option).first()
+                val tile = teleports.teleportTile(this, definition)
+                tele(tile.addX(1))
+                exactMoveDelay(tile, startDelay = 49, delay = 68, direction = Direction.WEST)
+            }
             return@objTeleportTakeOff Teleport.CANCEL
+        }
+
+        itemOnObjectOperate("bucket", "pool_of_slime*") {
+            while (inventory.contains("bucket")) {
+                anim("fill_bucket_slime")
+                sound("fill_ectoplasm")
+                inventory.replace("bucket", "bucket_of_slime")
+                delay(3)
+                message("You fill the bucket with ectoplasm.", ChatType.Filter)
+            }
         }
     }
 }

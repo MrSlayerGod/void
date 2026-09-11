@@ -1,19 +1,21 @@
 package content.skill.dungeoneering
 
+import com.github.michaelbull.logging.InlineLogger
 import content.quest.instance
 import world.gregs.voidps.engine.data.definition.Tables
+import world.gregs.voidps.engine.entity.character.Character
+import world.gregs.voidps.engine.entity.character.npc.NPCs
 import world.gregs.voidps.engine.entity.character.player.Player
 import world.gregs.voidps.engine.entity.item.floor.FloorItems
+import world.gregs.voidps.engine.entity.obj.GameObject
 import world.gregs.voidps.engine.entity.obj.GameObjects
 import world.gregs.voidps.engine.entity.obj.ObjectLayer
 import world.gregs.voidps.engine.entity.obj.remove
 import world.gregs.voidps.engine.get
 import world.gregs.voidps.engine.map.zone.DynamicZones
-import world.gregs.voidps.type.Delta
-import world.gregs.voidps.type.Direction
-import world.gregs.voidps.type.Tile
-import world.gregs.voidps.type.Zone
-import world.gregs.voidps.type.random
+import world.gregs.voidps.type.*
+import world.gregs.voidps.type.area.Rectangle
+import kotlin.collections.contains
 
 data class DungeonRoom(val tile: Tile, val isCritical: Boolean) {
     var type: DungeonRoomType = DungeonRoomType.Normal
@@ -22,9 +24,11 @@ data class DungeonRoom(val tile: Tile, val isCritical: Boolean) {
     val adjacentRooms = arrayOfNulls<DungeonRoom>(4)
     var parent: DungeonRoom? = null
 
+    var name: String? = null
     var open: Boolean = false
     var zone: Zone? = null
     var rotation: Int = 0
+    var monsters: Int = 0
 
     fun open(player: Player, dungeon: DungeonMap) {
         val zone = zone ?: return
@@ -38,29 +42,63 @@ data class DungeonRoom(val tile: Tile, val isCritical: Boolean) {
         for (sx in 0..1) {
             for (sy in 0..1) {
                 // Calculate the target zone offset (tx, ty) based on CW rotation
-                val tx = Dungeoneering.rotateX(sx, sy, rotation, 1)
-                val ty = Dungeoneering.rotateY(sx, sy, rotation, 1)
+                val tx = DungeonMap.rotateX(sx, sy, rotation, 1)
+                val ty = DungeonMap.rotateY(sx, sy, rotation, 1)
                 val clientRotation = (4 - rotation) % 4
                 zones.copy(zone.add(sx, sy), target.add(tx, ty), clientRotation)
             }
         }
-        val keys = keys.toMutableList()
-        val keyTiles = mutableListOf<Tile>()
+        // Spawn keys
+        spawnKeys(player, dungeon)
+        val complexity = player["dungeoneering_party_complexity", 1]
+        val floor = player["dungeoneering_party_floor", 1]
+        if (type == DungeonRoomType.Base) {
+            DungeonTableItems.spawn(complexity, dungeon, dungeon.skills, dungeon.playerCount)
+        }
+        DungeonNPCs.spawn(dungeon, this, floor, complexity)
+        spawnDoors(target, dungeon.theme)
+    }
+
+    private fun spawnKeys(player: Player, dungeon: DungeonMap) {
+        val keySpots = findObjects(dungeon, setOf("rand_invis_key_location"))
+        if (keySpots.isEmpty()) {
+            if (type == DungeonRoomType.Base) {
+                val tile = dungeon.startTile()
+                for (key in keys) {
+                    FloorItems.add(tile, key)
+                }
+                return
+            } else {
+                logger.warn { "Unable to find key tile for $zone $name" }
+                for (key in keys) {
+                    FloorItems.add(player.tile, key)
+                }
+                return
+            }
+        }
+        for (key in keySpots) {
+            key.remove()
+        }
+        for (key in keys) {
+            FloorItems.add(keySpots.random(random).tile, key)
+        }
+    }
+
+    fun findObjects(dungeon: DungeonMap, ids: Set<String>): List<GameObject> {
+        val objects = mutableListOf<GameObject>()
         for (x in 0 until 16) {
             for (y in 0 until 16) {
-                val tile = target.tile.add(x, y)
-                if (GameObjects.getLayer(tile, ObjectLayer.GROUND)?.id == "rand_invis_key_location") {
-                    keyTiles.add(tile)
+                val tile = dungeon.tile(this, x, y)
+                val obj = GameObjects.getLayer(tile, ObjectLayer.GROUND) ?: continue
+                if (ids.contains(obj.id)) {
+                    objects.add(obj)
                 }
             }
         }
-        for (key in keys) {
-            FloorItems.add(keyTiles.random(random), key)
-        }
-        for (tile in keyTiles) {
-            GameObjects.getLayer(tile, ObjectLayer.GROUND)?.remove()
-        }
-        val theme = dungeon.theme
+        return objects
+    }
+
+    private fun spawnDoors(target: Zone, theme: String) {
         for ((i, door) in doors.withIndex()) {
             if (door == null) {
                 continue
@@ -94,6 +132,24 @@ data class DungeonRoom(val tile: Tile, val isCritical: Boolean) {
             GameObjects.add(id, tile, rotation = i)
         }
     }
+
+    companion object {
+        private val logger = InlineLogger()
+
+        fun hasGuardian(tile: Tile): Boolean {
+            for (zone in dungeonRoomBounds(tile).toZones(0)) {
+                if (NPCs.at(zone).any { it.def.options.contains("Attack") }) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        fun dungeonRoomBounds(tile: Tile): Rectangle {
+            val start = Tile(tile.x / 16 * 16 + 1, tile.y / 16 * 16 + 1)
+            return Rectangle(start, 14, 14)
+        }
+    }
 }
 
 internal val Direction.roomIndex: Int
@@ -104,3 +160,5 @@ internal val Direction.roomIndex: Int
         Direction.SOUTH -> 3
         else -> -1
     }
+
+internal fun Character.dungeonRoomBounds(): Rectangle = DungeonRoom.dungeonRoomBounds(tile)

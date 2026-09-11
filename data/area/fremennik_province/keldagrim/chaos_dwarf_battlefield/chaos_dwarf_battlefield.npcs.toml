@@ -73,6 +73,7 @@ hitpoints = 610
 att = 38
 str = 42
 def = 28
+attack_speed = 5
 attack_bonus = 13
 max_hit_crush = 60
 hunt_mode = "cowardly"
@@ -87,6 +88,7 @@ hitpoints = 610
 att = 38
 str = 42
 def = 28
+attack_speed = 5
 attack_bonus = 13
 max_hit_crush = 60
 hunt_mode = "cowardly"
@@ -144,4 +146,3 @@ combat_def = "guard"
 [colonel_grenda_chaos_dwarf_battlefield]
 id = 8818
 examine = "A colonel in the dwarven Black Guard."
-

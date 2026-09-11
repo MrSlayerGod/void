@@ -193,7 +193,11 @@ class KissTheFrog : Script {
         // The cave is enclosed, so the player must not be able to strand themselves by walking off. If
         // they click off the dialogue (which cancels this handler), the walk fires this trigger and they
         // fade out and teleport home anyway; reading the dialogue through does the same at the end.
-        walkTrigger = { queue("ktf_escape_cave") { escapeCave() } }
+        walkTrigger {
+            queue("ktf_escape_cave") {
+                escapeCave()
+            }
+        }
         npc<Sad>("Oh, another poor soul hexed into a frog for their bad manners.")
         npc<Neutral>("Here, I'll send you on your way. Do be more polite next time.")
         escapeCave()
@@ -204,7 +208,7 @@ class KissTheFrog : Script {
         if (get<String>("random_event") != "kiss_the_frog") {
             return
         }
-        walkTrigger = null
+        clearWalkTrigger()
         open("fade_out")
         delay(2)
         failEvent()
@@ -246,7 +250,7 @@ class KissTheFrog : Script {
     private fun Player.finishEvent() {
         cleanup()
         RandomEvents.complete(this, "random_event_gift")
-        walkTrigger = null
+        clearWalkTrigger()
     }
 
     /** Escaped the frog cave: dump the player somewhere random with no reward. */

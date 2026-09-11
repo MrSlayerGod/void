@@ -53,21 +53,36 @@ att = 2
 str = 3
 def = 2
 combat_def = "giant_rat"
-hitpoints = 50
+hitpoints = 53
 slayer_xp = 5.0
 respawn_delay = 30
 drop_table = "giant_rat"
 categories = ["giant_rats", "rats"]
 examine = "Overgrown vermin."
+
+[giant_rat_tutorial_island]
+id = 950
+clone = "giant_rat"
+hitpoints = 30
+combat_def = "giant_rat_tutorial_island"
 hunt_mode = "cowardly"
+
+[giant_rat_3]
+id = 12349
+clone = "giant_rat"
+
+[giant_rat_5]
+id = 12351
+clone = "giant_rat"
 
 [giant_rat_dark]
 id = 8828
 att = 6
 str = 5
 def = 2
-hitpoints = 100
+hitpoints = 133
 slayer_xp = 10.0
+respawn_delay = 30
 combat_def = "giant_rat"
 drop_table = "giant_rat"
 categories = ["giant_rats", "rats"]
@@ -81,8 +96,9 @@ clone = "giant_rat_dark"
 hunt_mode = "cowardly"
 
 [giant_rat_dark_injured]
-clone = "giant_rat_dark"
 id = 8829
+categories = ["giant_rats", "rats"]
+clone = "giant_rat_dark"
 hunt_mode = "cowardly"
 
 [rat_ratcatchers]

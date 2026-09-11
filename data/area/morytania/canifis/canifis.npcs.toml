@@ -38,7 +38,7 @@ hitpoints = 1000
 att = 70
 str = 70
 def = 70
-combat_def = "canifis_citizen"
+combat_def = "human"
 slayer_xp = 100.0
 respawn_delay = 25
 categories = ["werewolves"]
@@ -153,7 +153,7 @@ id = 6045
 clone = "werewolf"
 examine = "She's looking for flowers."
 
-[achtryn]
+[mazchna_canifis]
 id = 8481
 
 [mazchna_base]
@@ -173,7 +173,7 @@ respawn_delay = 35
 drop_table = "ghoul"
 examine = "It's totally savage."
 
-[old_crone]
+[ahoy_crone]
 id = 1695
 
 [stranger_2]
@@ -185,5 +185,5 @@ id = 1576
 [mazchna]
 id = 8464
 
-[achtryn_3]
+[achtryn]
 id = 8465

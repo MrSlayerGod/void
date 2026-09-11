@@ -5,10 +5,13 @@ import world.gregs.voidps.engine.Script
 import world.gregs.voidps.engine.client.instruction.instruction
 import world.gregs.voidps.engine.client.message
 import world.gregs.voidps.engine.client.ui.playTrack
+import world.gregs.voidps.engine.client.variable.BitwiseValues
 import world.gregs.voidps.engine.data.definition.DefinitionsDecoder.Companion.toIdentifier
 import world.gregs.voidps.engine.data.definition.EnumDefinitions
+import world.gregs.voidps.engine.data.definition.VariableDefinitions
 import world.gregs.voidps.engine.entity.character.player.Player
 import world.gregs.voidps.network.client.instruction.SongEnd
+import world.gregs.voidps.type.random
 
 class Music(val tracks: MusicTracks) : Script {
 
@@ -20,16 +23,16 @@ class Music(val tracks: MusicTracks) : Script {
             unlockDefaultTracks(this)
             playAreaTrack(this)
             sendUnlocks(this)
+            sendPlaylist(this)
         }
 
         moved { from ->
             if (isBot) {
                 return@moved
             }
-            val tracks = tracks[tile.region]
-            for (track in tracks) {
+            for (track in tracks[tile.region]) {
                 if (!track.area.contains(from) && track.area.contains(tile)) {
-                    autoPlay(this, track)
+                    autoPlay(this, tracks.get(track.id) ?: continue)
                 }
             }
         }
@@ -88,21 +91,36 @@ class Music(val tracks: MusicTracks) : Script {
     }
 
     fun unlockDefaultTracks(player: Player) {
-        EnumDefinitions.get("music_track_hints").map?.forEach { (key, value) ->
-            if (value is String && value == "automatically.") {
-                MusicUnlock.unlockTrack(player, key)
-            }
-        }
-
+        unlockAutomatics(player, "music_track_hints")
+        unlockAutomatics(player, "music_track_hints_2")
         player.unlockTrack("scape_summon")
         player.unlockTrack("scape_theme")
     }
 
+    private fun unlockAutomatics(player: Player, enum: String) {
+        EnumDefinitions.get(enum).map?.forEach { (key, value) ->
+            if (value is String && value == "automatically.") {
+                unlockTrack(player, key)
+            }
+        }
+    }
+
+    private fun unlockTrack(player: Player, trackIndex: Int): Boolean {
+        val name = "unlocked_music_${trackIndex / 32}"
+        val list = VariableDefinitions.get(name)?.values as? BitwiseValues
+        val track = list?.values?.get(trackIndex.rem(32)) as? String ?: return false
+        return player.addVarbit("unlocked_music_${trackIndex / 32}", track)
+    }
+
     fun playAreaTrack(player: Player) {
-        val tracks = tracks[player.tile.region]
-        for (track in tracks) {
+        val next = MusicApi.nextSong(player)
+        if (next != null) {
+            autoPlay(player, tracks.get(next) ?: return)
+            return
+        }
+        for (track in tracks[player.tile.region]) {
             if (track.area.contains(player.tile)) {
-                autoPlay(player, track)
+                autoPlay(player, tracks.get(track.id) ?: continue)
                 break
             }
         }
@@ -117,7 +135,7 @@ class Music(val tracks: MusicTracks) : Script {
         val trackIndex = if (player["playlist_shuffle_enabled", false]) {
             // If shuffle is enabled, play a random song from the playlist
             // TODO: Implement a proper shuffle algorithm if one existed in 2011
-            playlistTracks.random()
+            playlistTracks.random(random)
         } else {
             // If the playlist is enabled, but shuffle is not, play the next song in the list
             playlistTracks[(playlistTracks.indexOf(finishedTrackIndex) + 1) % playlistTracks.size]
@@ -128,8 +146,17 @@ class Music(val tracks: MusicTracks) : Script {
     }
 
     fun sendUnlocks(player: Player) {
+        for (i in 0..30) {
+            player.sendVariable("unlocked_music_$i")
+        }
         player.interfaceOptions.unlockAll("music_player", "tracks", 0..2048) // 837.cs2
         player.interfaceOptions.unlockAll("music_player", "playlist", 0..23)
+    }
+
+    fun sendPlaylist(player: Player) {
+        for (slotNum in 1..12) {
+            player.sendVariable("playlist_slot_$slotNum")
+        }
     }
 
     /**
@@ -139,11 +166,15 @@ class Music(val tracks: MusicTracks) : Script {
      * @param interfaceSlot: The slot number of the interface that was clicked
      */
     fun Player.addToPlaylist(interfaceSlot: Int) {
-        if (this["playlist_slot_12", 32767] != 32767) return
+        if (this["playlist_slot_12", 32767] != 32767) {
+            return
+        }
 
         val firstEmptyPlaylistSlot = (1..12).first { this["playlist_slot_$it", 32767] == 32767 }
         var slot = interfaceSlot
-        if (slot % 2 != 0) slot -= 1
+        if (slot % 2 != 0) {
+            slot -= 1
+        }
 
         val trackIndex = slot / 2
         this["playlist_slot_$firstEmptyPlaylistSlot"] = trackIndex
@@ -211,12 +242,12 @@ class Music(val tracks: MusicTracks) : Script {
         return containsVarbit("unlocked_music_${musicIndex / 32}", toIdentifier(name))
     }
 
-    fun autoPlay(player: Player, track: MusicTracks.Track) {
-        val index = track.index
+    fun autoPlay(player: Player, track: Track) {
+        val index = track.index ?: return
         if (player.addVarbit("unlocked_music_${index / 32}", track.name)) {
             player.message("<red>You have unlocked a new music track: ${EnumDefinitions.get("music_track_names").string(index)}.")
         }
-        if (!player["playing_song", false]) {
+        if (!player.autoplay) {
             player.playTrack(index)
         }
     }

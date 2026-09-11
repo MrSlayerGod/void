@@ -1,11 +1,13 @@
 package content.skill.magic.spell
 
+import content.area.wilderness.daemonheim.DungeoneeringParty.Companion.inDungeoneering
 import content.skill.magic.book.lunar.checkSpellbookSwapCast
 import content.skill.magic.spell.SpellRunes.removeItems
 import world.gregs.voidps.cache.definition.data.InterfaceComponentDefinition
 import world.gregs.voidps.engine.client.message
 import world.gregs.voidps.engine.data.definition.InterfaceDefinitions
 import world.gregs.voidps.engine.data.definition.ItemDefinitions
+import world.gregs.voidps.engine.data.definition.Tables
 import world.gregs.voidps.engine.entity.World
 import world.gregs.voidps.engine.entity.character.player.Player
 import world.gregs.voidps.engine.entity.character.player.chat.ChatType
@@ -16,6 +18,7 @@ import world.gregs.voidps.engine.inv.*
 import world.gregs.voidps.engine.inv.transact.Transaction
 import world.gregs.voidps.engine.inv.transact.TransactionError
 import world.gregs.voidps.engine.inv.transact.operation.RemoveItem.remove
+import world.gregs.voidps.engine.inv.transact.operation.RemoveItemLimit.removeToLimit
 import world.gregs.voidps.network.login.protocol.visual.update.player.EquipSlot
 import world.gregs.voidps.type.random
 import kotlin.math.max
@@ -35,6 +38,11 @@ object SpellRunes {
     fun Transaction.removeItems(player: Player, spell: String, message: Boolean = true) {
         val component = InterfaceDefinitions.getComponent(player.spellBook, spell)
         if (component == null || !player.has(Skill.Magic, component.magicLevel, message = message)) {
+            error = TransactionError.Deficient(0)
+            return
+        }
+        val slayerLevel = Tables.intOrNull("spells.$spell.slayer_level")
+        if (slayerLevel != null && !player.has(Skill.Slayer, slayerLevel, if (message) " to cast this spell" else null)) {
             error = TransactionError.Deficient(0)
             return
         }
@@ -72,7 +80,18 @@ object SpellRunes {
             if (!key.endsWith("_rune") && key != "banana" && key != "unpowered_orb") {
                 false
             } else {
-                remove(key, required.getValue(key))
+                if (!player.inDungeoneering) {
+                    remove(key, required.getValue(key))
+                } else {
+                    val required = required.getValue(key)
+                    var removed = removeToLimit("${key}_dungeoneering", required)
+                    if (required - removed > 0) {
+                        removed += removeToLimit("${key}_dungeoneering_bound", required - removed)
+                    }
+                    if (removed < required) {
+                        error = TransactionError.Deficient(required - removed)
+                    }
+                }
                 !failed
             }
         }

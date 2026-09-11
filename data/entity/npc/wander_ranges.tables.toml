@@ -578,7 +578,7 @@ max_range = 35
 wander_range = 2
 
 [.cook_lumbridge]
-wander_range = 0
+wander_range = 3
 
 [.brother_omad_monastery]
 wander_range = 3
@@ -945,9 +945,11 @@ wander_range = 0
 wander_range = 6
 
 [.gull_draynor]
+wander_range = 0
 max_range = 100
 
 [.gull_draynor_2]
+wander_range = 0
 max_range = 100
 
 [.sanfew]
@@ -1130,11 +1132,11 @@ wander_range = 2
 [.fairy_shop_assistant]
 wander_range = 2
 
-#[.539]
-#wander_range = 2
+[.silk_trader]
+wander_range = 3
 
-#[.540]
-#wander_range = 2
+[.gem_trader]
+wander_range = 3
 
 [.karim]
 wander_range = 2
@@ -1476,7 +1478,7 @@ wander_range = 2
 wander_range = 3
 
 [.duke_horacio]
-wander_range = 0
+wander_range = 3
 
 [.elvarg]
 wander_range = 32
@@ -2161,7 +2163,7 @@ max_range = 100
 wander_range = 0
 
 [.prissy_scilla]
-wander_range = 0
+wander_range = 3
 
 [.rufus]
 wander_range = 2
@@ -3843,21 +3845,21 @@ wander_range = 3
 #[.1682]
 #wander_range = 3
 
-[.velorina_port_phasmatys]
+[.ahoy_velorina]
 wander_range = 2
 
-[.necrovarus_port_phasmatys]
+[.ahoy_necrovarus]
 wander_range = 2
 
-[.gravingas_port_phasmatys_3]
+[.ahoy_ghost_protestor]
 wander_range = 0
 max_range = 0
 
-[.ghost_disciple_port_phasmatys]
+[.ahoy_disciple]
 wander_range = 4
 max_range = 4
 
-[.ak_haranu_2]
+[.ahoy_akharanu]
 wander_range = 3
 max_range = 3
 
@@ -3881,11 +3883,11 @@ max_range = 4
 wander_range = 3
 max_range = 6
 
-[.ghost_captain]
+[.ahoy_ghost_captain_1]
 wander_range = 0
 max_range = 0
 
-[.ghost_captain_2]
+[.ahoy_ghost_captain_2]
 wander_range = 0
 max_range = 0
 
@@ -4303,13 +4305,13 @@ max_range = 10
 wander_range = 15
 max_range = 15
 
-[.clay_golem_ruins_of_uzer_2]
+[.clay_golem_ruins_of_uzer_broken]
 wander_range = 10
 
-[.clay_golem_ruins_of_uzer_3]
+[.clay_golem_ruins_of_uzer_damaged]
 wander_range = 10
 
-[.clay_golem_ruins_of_uzer_4]
+[.clay_golem_ruins_of_uzer_repaired]
 wander_range = 10
 
 [.desert_phoenix_kharidian_desert]
@@ -5247,10 +5249,10 @@ max_range = 6
 max_range = 50
 
 [.pig_2]
-wander_range = 0
+wander_range = 3
 
 [.piglet]
-wander_range = 0
+wander_range = 3
 
 [.piglet_2]
 wander_range = 3
@@ -5421,7 +5423,7 @@ max_range = 0
 wander_range = 2
 max_range = 2
 
-[.rug_merchant_kharidian_desert_2_2]
+[.rug_merchant_sophanem_visible]
 wander_range = 1
 max_range = 1
 
@@ -5465,6 +5467,9 @@ max_range = 7
 #wander_range = 0
 #max_range = 0
 
+[.cow_calf]
+wander_range = 4
+
 [.sheepdog]
 wander_range = 0
 
@@ -5480,89 +5485,88 @@ wander_range = 5
 [.chicken_falador_3]
 wander_range = 5
 
-#[.2316]
-#wander_range = 3
-#max_range = 5
+[.pig_3]
+wander_range = 3
+max_range = 5
 
-#[.2317]
-#wander_range = 3
-#max_range = 5
+[.pig_4]
+wander_range = 3
+max_range = 5
 
-#[.2318]
-#wander_range = 3
-#max_range = 5
+[.piglet_4]
+wander_range = 3
+max_range = 5
 
-#[.2319]
-#wander_range = 3
-#max_range = 5
+[.piglet_5]
+wander_range = 3
+max_range = 5
 
 [.blandebir_keldagrim]
 wander_range = 3
 max_range = 3
 
 [.elstan]
-wander_range = 0
+wander_range = 3
 
 [.dantaera]
-wander_range = 0
-max_range = 5
+wander_range = 3
 
 [.kragen_ardougne]
-wander_range = 0
+wander_range = 3
 
 [.lyra]
-wander_range = 0
+wander_range = 3
 
 [.francis]
-wander_range = 0
+wander_range = 3
 
 [.muncher_halloween_2007]
 wander_range = 0
 
 [.garth_brimhaven]
-wander_range = 0
+wander_range = 3
 
 [.ellena]
-wander_range = 0
+wander_range = 3
 
 [.selena]
-wander_range = 0
+wander_range = 3
 
 [.vasquen]
-wander_range = 0
+wander_range = 3
 
 [.rhonen]
-wander_range = 0
+wander_range = 3
 
 [.dreven]
-wander_range = 0
+wander_range = 3
 
 [.taria]
-wander_range = 0
+wander_range = 3
 
 [.rhazien]
-wander_range = 0
+wander_range = 3
 
 [.torrell]
-wander_range = 0
+wander_range = 3
 
 [.alain]
-wander_range = 0
+wander_range = 3
 
 [.heskel]
-wander_range = 0
+wander_range = 3
 
 [.treznor]
-wander_range = 0
+wander_range = 3
 
 [.fayeth]
-wander_range = 0
+wander_range = 3
 
 [.bolongo]
-wander_range = 0
+wander_range = 3
 
 [.gileth_observatory]
-wander_range = 0
+wander_range = 3
 
 [.sick_looking_sheep_1_3]
 wander_range = 3
@@ -6108,7 +6112,7 @@ max_range = 5
 #max_range = 0
 
 [.brother_althric]
-wander_range = 0
+wander_range = 2
 
 #[.2589]
 #wander_range = 10
@@ -6726,11 +6730,10 @@ wander_range = 0
 max_range = 50
 
 [.amaethwr]
-wander_range = 0
-max_range = 0
+wander_range = 3
 
 [.teclyn]
-wander_range = 0
+wander_range = 3
 
 #[.2862]
 #wander_range = 5
@@ -7159,7 +7162,7 @@ wander_range = 1
 max_range = 1
 
 [.tool_leprechaun]
-wander_range = 0
+wander_range = 3
 
 [.genie_genies_cave]
 wander_range = 0
@@ -7378,7 +7381,7 @@ wander_range = 25
 max_range = 25
 
 [.tool_leprechaun_kharazi_jungle]
-wander_range = 0
+wander_range = 3
 
 [.papa_mambo_kharazi_jungle]
 wander_range = 0
@@ -7715,6 +7718,9 @@ wander_range = 2
 
 [.gadrin]
 wander_range = 2
+
+[.swan_falador]
+wander_range = 5
 
 #[.3297]
 #max_range = 50
@@ -8099,7 +8105,7 @@ wander_range = 0
 #wander_range = 10
 #max_range = 10
 
-[.jubbly_bird]
+[.jubbly_bird_chompy]
 wander_range = 3
 
 [.plucked_jubbly]
@@ -8620,6 +8626,9 @@ wander_range = 5
 
 #[.3676]
 #wander_range = 5
+
+[.ali_the_leaflet_dropper]
+wander_range = 3
 
 [.sinister_stranger_2]
 wander_range = 10
@@ -10287,7 +10296,7 @@ wander_range = 0
 wander_range = 0
 
 [.garden_supplier]
-wander_range = 0
+wander_range = 3
 
 [.sick_looking_sheep_1_2]
 wander_range = 0
@@ -10821,7 +10830,7 @@ wander_range = 1
 [.goblin_underground_pass]
 wander_range = 15
 
-[.tree_spirit_level_14_2]
+[.scarab_swarm_pyramid_plunder]
 wander_range = 8
 max_range = 8
 
@@ -10920,13 +10929,13 @@ wander_range = 0
 wander_range = 0
 
 [.frizzy_skernip]
-wander_range = 0
+wander_range = 3
 
 [.yulf_squecks]
-wander_range = 0
+wander_range = 3
 
 [.praistan_ebola]
-wander_range = 0
+wander_range = 3
 
 [.hura]
 wander_range = 0
@@ -14920,11 +14929,11 @@ max_range = 3
 wander_range = 60
 max_range = 60
 
-[.gravingas_port_phasmatys]
+[.protester_ghostspeak_multi]
 wander_range = 0
 max_range = 0
 
-[.gravingas_port_phasmatys_2]
+[.protester_standardspeak_multi]
 wander_range = 0
 max_range = 0
 
@@ -18851,25 +18860,25 @@ max_range = 15
 wander_range = 0
 
 [.tool_leprechaun_brimhaven]
-wander_range = 0
+wander_range = 3
 
 [.tool_leprechaun_rimmington]
-wander_range = 0
+wander_range = 3
 
 [.tool_leprechaun_tai_bwo_wannai]
-wander_range = 0
+wander_range = 3
 
 [.tool_leprechaun_yanille]
 wander_range = 0
 
 [.tool_leprechaun_monastery]
-wander_range = 0
+wander_range = 3
 
 [.tool_leprechaun_ardougne]
-wander_range = 0
+wander_range = 3
 
 [.tool_leprechaun_al_kharid]
-wander_range = 0
+wander_range = 3
 
 [.tool_leprechaun_lumbridge]
 wander_range = 0
@@ -18886,7 +18895,7 @@ max_range = 0
 max_range = 0
 
 [.tool_leprechaun_alices_farm]
-wander_range = 0
+wander_range = 3
 
 [.zookeeper_2]
 wander_range = 5
@@ -19405,7 +19414,7 @@ wander_range = 1
 wander_range = 2
 
 [.brother_bordiss]
-wander_range = 0
+wander_range = 2
 
 [.will]
 wander_range = 5
@@ -20995,13 +21004,13 @@ max_range = 1
 [.mazchna]
 wander_range = 3
 
-[.achtryn_3]
+[.achtryn]
 wander_range = 3
 
 [.duradel]
 wander_range = 3
 
-[.lapalok_shilo_village_3]
+[.lapalok]
 wander_range = 3
 
 [.movario_tears_of_guthix_cavern]
@@ -30704,7 +30713,7 @@ wander_range = 2
 wander_range = 1
 
 [.bartender_rusty_anchor_inn_3]
-wander_range = 1
+wander_range = 0
 
 #[.11708]
 #wander_range = 0
@@ -32711,16 +32720,16 @@ wander_range = 8
 wander_range = 8
 
 [.cow_2]
-wander_range = 2
+wander_range = 4
 
 [.cow_brown_2]
-wander_range = 2
+wander_range = 4
 
 [.cow_calf_2]
-wander_range = 0
+wander_range = 4
 
 [.cow_calf_3]
-wander_range = 0
+wander_range = 4
 max_range = 16
 
 [.lumbridge_guardsman_attackable]
@@ -35259,7 +35268,7 @@ max_range = 30000
 #wander_range = 8
 
 [.zombie_farmer_kharazi_jungle]
-wander_range = 0
+wander_range = 3
 
 #[.13102]
 #wander_range = 3

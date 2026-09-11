@@ -21,6 +21,7 @@ import world.gregs.voidps.engine.entity.character.player.temporaryMoveType
 import world.gregs.voidps.engine.get
 import world.gregs.voidps.engine.map.Overlap
 import world.gregs.voidps.engine.map.collision.Collisions
+import world.gregs.voidps.engine.map.instance.Instances
 import world.gregs.voidps.network.login.protocol.visual.update.player.MoveType
 import world.gregs.voidps.type.Delta
 import world.gregs.voidps.type.Direction
@@ -50,9 +51,9 @@ open class Movement(
         val pathfinds = character is Player || (character is NPC && character["owner_index", -1] != -1)
         if (pathfinds && !tile.noCollision) {
             val route = pathFinder.findPath(character, strategy, shape)
-            character.steps.queueRoute(route, tile, tile.noCollision, tile.noRun)
+            character.steps.queueRoute(route, tile, tile.noCollision, noRun = strategy.forceWalk(character))
         } else if (tile != Tile.EMPTY) {
-            character.steps.queueStep(tile, tile.noCollision, tile.noRun)
+            character.steps.queueStep(tile, tile.noCollision, noRun = strategy.forceWalk(character))
         }
         needsCalculation = false
     }
@@ -78,7 +79,7 @@ open class Movement(
         }
         for (direction in Direction.cardinal.shuffled(random)) {
             if (canStep(direction.delta.x, direction.delta.y)) {
-                character.steps.queueStep(npc.tile.add(direction))
+                character.steps.queueStep(npc.tile.add(direction), noRun = strategy.forceWalk(character))
                 break
             }
         }
@@ -102,8 +103,7 @@ open class Movement(
             calculate()
         }
         if (character is NPC && character.walkTrigger != null && character.suspension != null) {
-            character.walkTrigger?.invoke()
-            character.walkTrigger = null
+            character.walkTrigger()
         }
         if (step(runStep = false) && character.running) {
             if (character.steps.isNotEmpty()) {
@@ -261,9 +261,8 @@ open class Movement(
             }
             if (character is Player) {
                 Moved.player(character, from)
-                val offset = character.get<Long>("instance_offset")?.let { Delta(it) } ?: Delta.EMPTY
-                val toOriginal = to.minus(offset)
-                val fromOriginal = from.minus(offset)
+                val toOriginal = character.original(to)
+                val fromOriginal = character.original(from)
                 for (def in Areas.get(fromOriginal.zone)) {
                     if (fromOriginal in def.area && toOriginal !in def.area) {
                         Moved.exit(character, def.name, def)
@@ -277,6 +276,14 @@ open class Movement(
             } else if (character is NPC) {
                 Moved.npc(character, from)
             }
+        }
+
+        private fun Player.original(tile: Tile): Tile {
+            if (!Instances.reserved(tile.region)) {
+                return tile
+            }
+            val offset: Long = get("instance_offset") ?: return tile
+            return tile.minus(Delta(offset))
         }
 
         private fun move(character: Character, from: Tile, to: Tile) {

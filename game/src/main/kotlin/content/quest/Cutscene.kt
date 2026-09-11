@@ -45,7 +45,7 @@ class Cutscene(
     }
 
     fun onEnd(destroyInstance: Boolean = true, block: suspend () -> Unit) {
-        player.walkTrigger = {
+        player.walkTrigger {
             player.queue.clear("${name}_cutscene_end")
             player.queue("${name}_cutscene_end") {
                 end(destroyInstance)
@@ -158,6 +158,9 @@ fun Player.instance(): Region? {
 fun Player.clearInstance(): Boolean {
     val id: Int = remove("instance") ?: return false
     clear("instance_offset")
+    // Only meaningful while inside the instance; leaving it set sends the next instance exit
+    // (and any death drop) back to an exit tile that has nothing to do with where the player is.
+    clear("instance_logout_tile")
     val region = Region(id)
     Instances.free(region)
     get<DynamicZones>().clear(region)
@@ -199,4 +202,25 @@ fun Player.closeTabs(vararg others: Tab) {
 }
 
 fun Player.startCutscene(name: String, region: Region = Region.EMPTY): Cutscene = Cutscene(this, name, region)
+
+/**
+ * Starts a cutscene in a private copy of a [width] by [height] block of chunks, the south west
+ * corner of which is the chunk [base] sits in. For scenes that only need a room or two rather than
+ * a whole region.
+ */
+fun Player.startCutscene(name: String, base: Tile, width: Int, height: Int, levels: Int = 4): Cutscene {
+    val instance = smallInstance()
+    return Cutscene(this, name, instance, copyChunks(instance, base, width, height, levels))
+}
+
+/**
+ * Copies a [width] by [height] block of chunks, starting at the chunk [base] sits in, into
+ * [instance], and returns the offset from the original chunks to the copy.
+ */
+fun Player.copyChunks(instance: Region, base: Tile, width: Int, height: Int, levels: Int = 4): Delta {
+    val offset = instance.tile.delta(base.zone.tile)
+    get<DynamicZones>().copy(base.zone, instance.tile.zone, width, height, levels)
+    set("instance_offset", offset.id)
+    return offset
+}
 fun Player.startCutscene(name: String, region: Region, offset: Delta): Cutscene = Cutscene(this, name, region, offset)

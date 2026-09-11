@@ -10,12 +10,14 @@ import world.gregs.voidps.engine.client.variable.hasClock
 import world.gregs.voidps.engine.client.variable.remaining
 import world.gregs.voidps.engine.client.variable.start
 import world.gregs.voidps.engine.data.Settings
+import world.gregs.voidps.engine.data.definition.SoundDefinitions
+import world.gregs.voidps.engine.entity.character.areaSound
 import world.gregs.voidps.engine.entity.character.player.Player
 import world.gregs.voidps.engine.entity.character.sound
 import world.gregs.voidps.engine.entity.obj.GameObject
 import world.gregs.voidps.engine.entity.obj.GameObjects
-import world.gregs.voidps.engine.entity.obj.ObjectShape
 import world.gregs.voidps.engine.entity.obj.replace
+import world.gregs.voidps.engine.get
 import world.gregs.voidps.engine.timer.epochSeconds
 import world.gregs.voidps.engine.timer.toTicks
 import world.gregs.voidps.type.Direction
@@ -45,21 +47,21 @@ object Door {
      */
     fun closeDoor(player: Player, door: GameObject, def: ObjectDefinition = door.def, ticks: Int = doorResetDelay, collision: Boolean = true): Boolean {
         val double = DoubleDoor.get(player, door, def, 1)
+        // The revert plays the sound for us, otherwise it'd play twice
         if (resetExisting(door, double)) {
-            sound(player, def, "close")
             return true
         }
 
         // Single door
         if (double == null && door.id.endsWith("_opened")) {
-            replace(door, def, "_opened", "_closed", 0, 3, ticks, collision)
+            replace(door, def, "_opened", "_closed", 0, 3, ticks, collision, revert(def, door, "open"))
             sound(player, def, "close")
             return true
         }
 
         // Double doors
         if (double != null && door.id.endsWith("_opened") && double.id.endsWith("_opened")) {
-            DoubleDoor.close(player, door, def, double, ticks, collision)
+            DoubleDoor.close(player, door, def, double, ticks, collision, revert(def, door, "open"))
             sound(player, def, "close")
             return true
         }
@@ -72,21 +74,21 @@ object Door {
      */
     fun openDoor(player: Player, door: GameObject, def: ObjectDefinition = door.def, ticks: Int = doorResetDelay, collision: Boolean = true): Boolean {
         val double = DoubleDoor.get(player, door, def, 0)
+        // The revert plays the sound for us, otherwise it'd play twice
         if (resetExisting(door, double)) {
-            sound(player, def, "open")
             return true
         }
 
         // Single door
         if (double == null && def.stringId.endsWith("_closed")) {
-            replace(door, def, "_closed", "_opened", 1, 1, ticks, collision)
+            replace(door, def, "_closed", "_opened", 1, 1, ticks, collision, revert(def, door, "close"))
             sound(player, def, "open")
             return true
         }
 
         // Double doors
         if (double != null && def.stringId.endsWith("_closed") && double.def(player).stringId.endsWith("_closed")) {
-            DoubleDoor.open(player, door, def, double, ticks, collision)
+            DoubleDoor.open(player, door, def, double, ticks, collision, revert(def, door, "close"))
             sound(player, def, "open")
             return true
         }
@@ -95,8 +97,30 @@ object Door {
     }
 
     private fun sound(player: Player, definition: ObjectDefinition, suffix: String) {
-        val material = if (definition.contains("material")) "${definition["material", ""]}_" else ""
-        player.sound(if (definition.isGate()) "${material}gate_$suffix" else "${material}door_$suffix")
+        player.sound(soundName(definition, suffix))
+    }
+
+    /**
+     * Plays [suffix] to everyone nearby once a temporary door reverts to its original state
+     */
+    private fun revert(definition: ObjectDefinition, obj: GameObject, suffix: String): () -> Unit = {
+        areaSound(soundName(definition, suffix), obj.tile)
+    }
+
+    private fun soundName(definition: ObjectDefinition, suffix: String): String {
+        val type = if (definition.isGate()) "gate" else "door"
+        val material = definition["material", ""]
+        if (material.isEmpty()) {
+            return "${type}_$suffix"
+        }
+        // Materials are named after either the door type ("iron_door_open") or the sound
+        // itself ("grate_open"), fall back to the generic sound rather than playing nothing
+        val sounds: SoundDefinitions = get()
+        return when {
+            sounds.contains("${material}_${type}_$suffix") -> "${material}_${type}_$suffix"
+            sounds.contains("${material}_$suffix") -> "${material}_$suffix"
+            else -> "${type}_$suffix"
+        }
     }
 
     private fun resetExisting(obj: GameObject, double: GameObject?): Boolean {
@@ -110,7 +134,7 @@ object Door {
     /**
      * Replace door [obj] with [next] for [ticks]
      */
-    private fun replace(obj: GameObject, def: ObjectDefinition, current: String, next: String, tileRotation: Int, objRotation: Int, ticks: Int, collision: Boolean = true) {
+    private fun replace(obj: GameObject, def: ObjectDefinition, current: String, next: String, tileRotation: Int, objRotation: Int, ticks: Int, collision: Boolean = true, onRevert: (() -> Unit)? = null) {
         val hinged = !def.stringId.contains("single")
         obj.replace(
             id = def.stringId.replace(current, next),
@@ -118,6 +142,7 @@ object Door {
             rotation = if (hinged) obj.rotation(objRotation) else obj.rotation,
             ticks = ticks,
             collision = collision,
+            onRevert = onRevert,
         )
     }
 
@@ -255,53 +280,4 @@ fun Player.closeDoor(door: GameObject, ticks: Int = 0): Boolean {
     }
     Door.closeDoor(this, door, def)
     return false
-}
-
-suspend fun Player.walkThroughDoor(
-    target: GameObject,
-    enter: Boolean,
-    enterOffset: Int,
-    exitOffset: Int,
-    openId: String,
-    openRotation: Int = 2,
-    openOffset: Int = 0,
-    openSound: String,
-    xAxis: Boolean = true,
-) {
-    sound(openSound)
-    if (xAxis) {
-        walkToDelay(Tile(if (enter) target.x + enterOffset else target.x + exitOffset, target.y, target.level), true)
-        walkTo(
-            target = Tile(if (enter) target.x + exitOffset else target.x + enterOffset, target.y, target.level),
-            forceWalk = true,
-            noCollision = true,
-        )
-        target.replace(
-            id = openId,
-            tile = Tile(target.x + openOffset, target.y, target.level),
-            rotation = openRotation,
-            ticks = 3,
-        )
-    } else {
-        walkToDelay(Tile(target.x, if (enter) target.y + enterOffset else target.y + exitOffset, target.level), true)
-        walkTo(
-            target = Tile(target.x, if (enter) target.y + exitOffset else target.y + enterOffset, target.level),
-            forceWalk = true,
-            noCollision = true,
-        )
-        target.replace(
-            id = openId,
-            tile = Tile(target.x, target.y + openOffset, target.level),
-            rotation = openRotation,
-            ticks = 3,
-        )
-    }
-    GameObjects.add(
-        id = "inviswall",
-        tile = target.tile,
-        shape = ObjectShape.WALL_STRAIGHT,
-        rotation = target.rotation,
-        ticks = 3,
-    )
-    delay(2)
 }

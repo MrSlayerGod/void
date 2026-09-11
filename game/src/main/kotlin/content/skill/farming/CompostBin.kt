@@ -23,15 +23,19 @@ class CompostBin : Script {
 
     init {
         playerSpawn {
-            sendVariable("compost_bin_falador")
-            sendVariable("compost_bin_catherby")
-            sendVariable("compost_bin_port_phasmatys")
-            sendVariable("compost_bin_ardougne")
+            for (variable in listOf("compost_bin_falador", "compost_bin_catherby", "compost_bin_port_phasmatys", "compost_bin_ardougne")) {
+                // Repair saves corrupted by the old rot completion writing "<type>_rotting_ready"
+                val value: String? = this[variable]
+                if (value != null && value.endsWith("_rotting_ready")) {
+                    this[variable] = value.substringBefore("_rotting") + "_ready"
+                }
+                sendVariable(variable)
+            }
         }
 
         itemOnObjectOperate("*", "compost_bin_*", handler = ::compost)
 
-        objectOperate("Close", "compost_bin_*_15") {
+        objectOperate("Close", "compost_bin_compostable_15,compost_bin_supercompostable_15,compost_bin_tomatoes_15") {
             val variable = it.target.id.removePrefix("farming_")
             val current = get(variable, "empty")
             // Takes between 32-60 mins, assuming `farming.decompose.mins` is 2 mins
@@ -179,12 +183,23 @@ class CompostBin : Script {
             return
         }
         val variable = interact.target.id.removePrefix("farming_")
-        val current = player[variable, "empty"]
-        val stage = current.substringAfterLast("_").toIntOrNull() ?: 0
+        var current = player[variable, "empty"]
+        if (current.contains("rotting") || current.endsWith("_ready")) {
+            return player.statement("The compost bin is closed.")
+        }
+        if (contents(current) in finished) {
+            return player.statement("The compost bin must be emptied before you can put new items in it.")
+        }
+        if (stage(current) == 15) {
+            return player.statement("The compost bin is too full to put anything else in it.")
+        }
+        val type = type(player, current, interact.item) ?: return
+        // The bin can only be changed by this player, but the confirmation suspends so re-read it anyway
+        current = player[variable, "empty"]
+        val stage = stage(current)
         if (stage == 15) {
             return player.statement("The compost bin is too full to put anything else in it.")
         }
-        val type = type(current, interact.item)
         if (Settings["farming.compost.all", false]) {
             player.anim("take")
             player.sound("farming_putin")
@@ -210,12 +225,43 @@ class CompostBin : Script {
         }
     }
 
-    private fun type(current: String, item: Item): String {
-        val type = current.substringBeforeLast("_")
-        return when (type) {
-            "supercompostable" -> if (item.def["super_compost", false]) "supercompostable" else "compostable"
+    private suspend fun type(player: Player, current: String, item: Item): String? {
+        val superCompost = item.def["super_compost", false]
+        return when (contents(current)) {
+            "supercompostable" -> when {
+                superCompost -> "supercompostable"
+                player.confirm(
+                    "The compost bin contains supercompostable items",
+                    "I just want to make normal compost now.",
+                    "I want to stick to making supercompost.",
+                ) -> "compostable"
+                else -> null
+            }
+            "compostable" -> when {
+                !superCompost -> "compostable"
+                player.confirm(
+                    "This is a supercompostable item - are you sure?",
+                    "Yes, I want to use it to make normal compost.",
+                    "No, I don't want to waste it making normal compost.",
+                ) -> "compostable"
+                else -> null
+            }
             "tomatoes" -> if (item.id == "tomato") "tomatoes" else "compostable"
-            else -> "compostable"
+            else -> when {
+                superCompost -> "supercompostable"
+                item.id == "tomato" -> "tomatoes"
+                else -> "compostable"
+            }
         }
+    }
+
+    private suspend fun Player.confirm(title: String, accept: String, decline: String): Boolean = choice(listOf(accept, decline), title) == 1
+
+    private fun contents(value: String): String = value.substringBeforeLast("_")
+
+    private fun stage(value: String): Int = value.substringAfterLast("_").toIntOrNull() ?: 0
+
+    private companion object {
+        private val finished = setOf("compost", "supercompost", "rotten_tomatoes")
     }
 }

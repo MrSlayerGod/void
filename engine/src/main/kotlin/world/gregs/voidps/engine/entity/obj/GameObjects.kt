@@ -194,21 +194,30 @@ object GameObjects : ZoneBatchUpdates.Sender {
         rotation: Int = original.rotation,
         ticks: Int = NEVER,
         collision: Boolean = true,
+        onRevert: (() -> Unit)? = null,
     ): GameObject {
         val replacement = GameObject(ObjectDefinitions.get(id).id, tile, shape, rotation)
-        replace(original, replacement, ticks, collision)
+        replace(original, replacement, ticks, collision, onRevert)
         return replacement
     }
 
     /**
      * Replaces [original] object with [replacement], optionally reverting after [ticks]
+     * and calling [onRevert] once reverted
      */
-    fun replace(original: GameObject, replacement: GameObject, ticks: Int = NEVER, collision: Boolean = true) {
+    fun replace(original: GameObject, replacement: GameObject, ticks: Int = NEVER, collision: Boolean = true, onRevert: (() -> Unit)? = null) {
+        // Removing a same-tile replacement re-adds the object [set] on game load by itself, so
+        // adding [original] back would revert a replaced replacement to the previous replacement
+        // rather than to the original.
+        val restored = replacement.index == original.index && map[original] > 1
         remove(original, collision)
         add(replacement, collision)
         timers.add(setOf(original, replacement), ticks) {
             remove(replacement, collision)
-            add(original, collision)
+            if (!restored) {
+                add(original, collision)
+            }
+            onRevert?.invoke()
         }
     }
 
@@ -424,7 +433,7 @@ object GameObjects : ZoneBatchUpdates.Sender {
  * Replaces an existing map objects with [id] [tile] [shape] and [rotation], modifying [collision] and
  * optionally removed after [ticks]
  */
-fun GameObject.replace(id: String, tile: Tile = this.tile, shape: Int = this.shape, rotation: Int = this.rotation, ticks: Int = -1, collision: Boolean = true): GameObject = GameObjects.replace(this, id, tile, shape, rotation, ticks, collision)
+fun GameObject.replace(id: String, tile: Tile = this.tile, shape: Int = this.shape, rotation: Int = this.rotation, ticks: Int = -1, collision: Boolean = true, onRevert: (() -> Unit)? = null): GameObject = GameObjects.replace(this, id, tile, shape, rotation, ticks, collision, onRevert)
 
 /**
  * Removes an existing map [GameObject] and its [collision], optionally reverted after [ticks]

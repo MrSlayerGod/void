@@ -15,6 +15,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import world.gregs.voidps.engine.client.message
 import world.gregs.voidps.engine.client.variable.hasClock
+import world.gregs.voidps.engine.data.Settings
 import world.gregs.voidps.engine.data.definition.NPCDefinitions
 import world.gregs.voidps.engine.entity.character.Character
 import world.gregs.voidps.engine.entity.character.mode.PauseMode
@@ -79,6 +80,10 @@ object Target {
             return false
         }
         if (source is Player && target is Player) {
+            if (Settings["combat.pvp", false]){
+                if (message) source.message("Player-vs-player has been disabled in this world.")
+                return false
+            }
             if (!source.inPvp && !source.inWilderness) {
                 if (message) source.message("You can only attack players in a player-vs-player area.")
                 return false
@@ -186,6 +191,7 @@ object Target {
             0
         }
         is NPC if target.id == "harpie_bug_swarm" && source is Player && source.equipped(EquipSlot.Shield).id != "lit_bug_lantern" -> 0
+        is NPC if target.id.startsWith("pheasant") -> target.levels.get(Skill.Constitution)
         is NPC if target.def.contains("damage_cap") -> damage.coerceAtMost(target.def["damage_cap"])
         is NPC if target.def.contains("immune_death") -> damage.coerceAtMost(target.levels.get(Skill.Constitution) - 10)
         is NPC if target.id.endsWith("_impling") -> 0

@@ -11,6 +11,7 @@ import world.gregs.voidps.engine.client.variable.remaining
 import world.gregs.voidps.engine.entity.character.npc.NPCs
 import world.gregs.voidps.engine.entity.character.player.name
 import world.gregs.voidps.engine.entity.character.player.skill.Skill
+import world.gregs.voidps.engine.entity.character.player.skill.level.Level
 import world.gregs.voidps.engine.entity.item.Item
 import world.gregs.voidps.engine.entity.item.floor.FloorItems
 import world.gregs.voidps.engine.inv.add
@@ -67,6 +68,24 @@ class GravestonesTest : WorldTest() {
     }
 
     @Test
+    fun `A stale instance logout tile doesn't move the grave`() {
+        val tile = Tile(2872, 5361, 2) // God Wars Dungeon, Bandos chamber
+        val logout = Tile(3246, 3198) // Lumbridge catacombs exit, left over from Blood Pact
+        val player = createPlayer(tile)
+        player["instance_logout_tile"] = logout.id
+        player.inventory.add("coins", 10)
+        tick()
+
+        player.damage(101)
+        tick(9)
+
+        assertNotNull(NPCs.firstOrNull(tile) { it.id.startsWith("gravestone") })
+        assertNotNull(FloorItems.firstOrNull(tile, "coins"))
+        assertNull(NPCs.firstOrNull(logout) { it.id.startsWith("gravestone") })
+        assertNull(FloorItems.firstOrNull(logout, "coins"))
+    }
+
+    @Test
     fun `A gravestone breaks after 3 minutes`() {
         val tile = Tile(3235, 3220)
         val player = createPlayer(tile)
@@ -109,7 +128,8 @@ class GravestonesTest : WorldTest() {
         TimerApi.tick(grave, "grave_degrade")
 
         val friend = createPlayer(tile.addY(1), name = "friend")
-        friend.levels.set(Skill.Prayer, 5)
+        friend.experience.set(Skill.Prayer, Level.experience(5))
+        friend.levels.set(Skill.Prayer, 0) // repairing takes no prayer points
         friend.npcOption(grave, "Repair")
         tick(1)
         assertEquals(499, floorItem.revealTicks)
@@ -130,13 +150,32 @@ class GravestonesTest : WorldTest() {
         TimerApi.tick(grave, "grave_degrade")
 
         val friend = createPlayer(tile.addY(1), name = "friend")
-        friend.levels.set(Skill.Prayer, 75)
+        friend.experience.set(Skill.Prayer, Level.experience(75))
         friend.npcOption(grave, "Bless")
         tick(1)
         assertEquals(5999, floorItem.revealTicks)
         assertEquals(6060, floorItem.disappearTicks)
         tick(3)
         assertEquals(3600, grave.remaining("grave_timer", epochSeconds()))
+    }
+
+    @Test
+    fun `Blessing a grave still needs prayer points`() {
+        val tile = Tile(3235, 3220)
+        val player = createPlayer(tile)
+        Gravestone.spawn(player, tile)
+        tick()
+        val grave = NPCs.first(tile) { it.id.startsWith("gravestone") }
+        grave["grave_timer"] = 119
+        TimerApi.tick(grave, "grave_degrade")
+
+        val friend = createPlayer(tile.addY(1), name = "prayerless")
+        friend.experience.set(Skill.Prayer, Level.experience(75))
+        friend.levels.set(Skill.Prayer, 0)
+        friend.npcOption(grave, "Bless")
+        tick(4)
+
+        assertFalse(grave["blessed", false])
     }
 
     @Test

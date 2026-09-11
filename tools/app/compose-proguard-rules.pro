@@ -34,7 +34,13 @@
 -keep,allowoptimization interface world.gregs.voidps.cache.Definition
 -keepclassmembers class * implements world.gregs.voidps.cache.Definition {
     <fields>;
+    public *** get*();
+    public *** is*();
+    public void set*(...);
 }
 -keepclassmembers class world.gregs.voidps.tools.search.screen.view.tab.**Wrapper {
     <fields>;
+}
+-keepclassmembers class world.gregs.voidps.**.Params {
+    public static final int *;
 }

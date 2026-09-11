@@ -18,9 +18,6 @@ id = 1195
 [rand_party_complexity_level_trans]
 id = 1320
 
-[rand_display_stage]
-id = 1186
-
 [rand_nurf_amount_trans]
 id = 1321
 format = "boolean"
@@ -149,3 +146,28 @@ id = 1231
 
 [rand_award_5_6]
 id = 1232
+
+[rand_ready_state_player5]
+id = 1401
+format = "list"
+values = ["unset", "ready", "left"]
+
+[rand_ready_state_player4]
+id = 1400
+format = "list"
+values = ["unset", "ready", "left"]
+
+[rand_ready_state_player3]
+id = 1399
+format = "list"
+values = ["unset", "ready", "left"]
+
+[rand_ready_state_player2]
+id = 1398
+format = "list"
+values = ["unset", "ready", "left"]
+
+[rand_ready_state_player1]
+id = 1397
+format = "list"
+values = ["unset", "ready", "left"]

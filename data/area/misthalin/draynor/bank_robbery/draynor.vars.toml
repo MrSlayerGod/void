@@ -1,0 +1,7 @@
+[wom_task]
+persist = true
+format = "boolean"
+
+[wom_bankjob]
+persist = true
+format = "boolean"

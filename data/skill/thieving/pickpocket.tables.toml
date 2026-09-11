@@ -89,6 +89,9 @@ type = "workman"
 [.farmer]
 type = "farmer"
 
+[.farmer_2]
+type = "farmer"
+
 [.farmer_lumbridge]
 type = "farmer"
 
@@ -294,7 +297,7 @@ type = "guard"
 type = "guard"
 
 [.rogue_castle]
-type = "rouge"
+type = "rogue"
 
 [.sassilik_rellekka]
 type = "fremmennik"

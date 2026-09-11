@@ -42,6 +42,14 @@ class Mime : Script {
             }
             (suspension as? Suspension.StringEntry)?.resume(it.component)
         }
+
+        interfaceClosed(INTERFACE) {
+            if (!get("mime_pending", false)) {
+                return@interfaceClosed
+            }
+            clear("mime_pending")
+            restart()
+        }
     }
 
     private suspend fun Player.startEvent() {
@@ -50,18 +58,28 @@ class Mime : Script {
             set("mime_correct", 0)
         }
         mysteriousOldMan()
-        walkTrigger {
-            strongQueue("start") {
-                start()
-            }
-        }
+        trigger()
         kidnap(SPAWN)
         // The old man stays behind at the kidnap origin, so he narrates by id rather than talkWith.
         npc<Neutral>("mysterious_old_man", "Here's a little challenge for you:<br>Copy the Mime's performance, then you'll be released.")
         start()
     }
 
+    private fun Player.trigger() {
+        walkTrigger {
+            restart()
+        }
+    }
+
+    private fun Player.restart() {
+        queue.clear("start")
+        strongQueue("start") {
+            start()
+        }
+    }
+
     private suspend fun Player.start() {
+        trigger()
         walkOverDelay(WATCH)
         val mime = NPCs.firstOrNull(MIME_TILE) { it.id == "mime" } ?: NPCs.add("mime", MIME_TILE, ticks = -1, owner = this)
         runMime(mime)
@@ -106,7 +124,9 @@ class Mime : Script {
 
     private suspend fun Player.awaitEmote(): String {
         open(INTERFACE)
+        set("mime_pending", true)
         val emote = pauseString()
+        clear("mime_pending")
         close(INTERFACE)
         return emote
     }
@@ -136,6 +156,7 @@ class Mime : Script {
         for (unlock in MIME_EMOTES) {
             set("unlocked_emote_$unlock", true)
         }
+        clearWalkTrigger()
         addOrDrop("random_event_gift")
         rewardCostumePoint("mime")
         clear("mime_emote")

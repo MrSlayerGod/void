@@ -1072,21 +1072,23 @@ examine = "The door is closed."
 
 [door_138_opened]
 id = 5128
+examine = "The exit sign from an old theatre."
 
 [door_138_closed]
 id = 5126
+examine = "It's covered in junk."
 
-[door_140_opened]
+[fenk_tower_door_opened]
 id = 5173
 
-[door_140_closed]
+[fenk_tower_door_closed]
 id = 5172
 examine = "The door to the Tower."
 
-[door_141_opened]
+[fenk_shed_door_opened]
 id = 5175
 
-[door_141_closed]
+[fenk_shed_door_closed]
 id = 5174
 examine = "The door to the garden shed."
 
@@ -1105,14 +1107,6 @@ examine = "Looks wooden. Feels wooden. I wonder is it wooden?"
 [fenk_door_mirror_closed]
 id = 5186
 examine = "Looks wooden. Feels wooden. I wonder is it wooden?"
-
-[door_146_opened]
-id = 5245
-examine = "Looks a bit tatty..."
-
-[door_146_closed]
-id = 5244
-examine = "Looks a bit tatty..."
 
 [door_148_opened]
 id = 31839
@@ -2535,6 +2529,7 @@ examine = "The door is closed."
 
 [door_448_opened]
 id = 24379
+examine = "The door is open."
 
 [door_448_closed]
 id = 24381

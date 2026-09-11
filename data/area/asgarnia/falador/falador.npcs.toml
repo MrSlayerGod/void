@@ -144,23 +144,42 @@ examine = "He rules the, er, roost."
 
 [chicken_falador]
 id = 2313
+clone = "chicken"
 drop_table = "chicken"
 combat_def = "chicken"
 hitpoints = 30
 
 [chicken_falador_2]
 id = 2314
+clone = "chicken"
 drop_table = "chicken"
 combat_def = "chicken"
 hitpoints = 30
 
 [chicken_falador_3]
 id = 2315
+clone = "chicken"
 categories = ["birds"]
 examine = "Yep. Definitely a chicken."
 drop_table = "chicken"
 combat_def = "chicken"
 hitpoints = 30
+
+[pig_3]
+id = 2316
+examine = "Swine."
+
+[pig_4]
+id = 2317
+examine = "Porker."
+
+[piglet_4]
+id = 2318
+examine = "Hog."
+
+[piglet_5]
+id = 2319
+examine = "I shall call him, Mini Pig."
 
 [elstan]
 id = 2323
@@ -314,6 +333,7 @@ drop_table = "jeff"
 [guard_falador_7]
 id = 3241
 clone = "guard_falador"
+examine = "He's keeping an eye out."
 
 [dark_wizard_falador]
 id = 3242
@@ -382,6 +402,7 @@ examine = "A dwarf who looks after the mining guild."
 
 [swan_falador]
 id = 3296
+collision = "sea"
 examine = "A graceful bird."
 
 [zandar_horfyre_falador]
@@ -651,7 +672,7 @@ examine = "An old gardener."
 id = 1217
 hitpoints = 70
 def = 7
-combat_def = "man"
+combat_def = "gardener"
 respawn_delay = 50
 drop_table = "bones"
 examine = "An old gardener."
